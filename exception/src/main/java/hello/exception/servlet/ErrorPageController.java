@@ -1,10 +1,17 @@
 package hello.exception.servlet;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -32,7 +39,25 @@ public class ErrorPageController {
         return "error-page/500";
     }
 
+    @RequestMapping(value = "/error-page/500", produces = MediaType.APPLICATION_JSON_VALUE)
+// client의 accept type에 따라서 이 컨트롤러가 우선순위 갖도록 해줌
+    public ResponseEntity<Map<String, Object>> errorPage500Api(
+            HttpServletRequest request, HttpServletResponse response
+    ) {
+        log.info("API ErrorPage 500");
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        Exception ex = (Exception) request.getAttribute(ERROR_EXCEPTION);
+        result.put("status", request.getAttribute(ERROR_STATUS_CODE));
+        result.put("message", ex.getMessage()); // 예외에서 받은 메세지
+
+        Integer statusCode = (Integer) request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        return new ResponseEntity<>(result, HttpStatus.valueOf(statusCode)); // 결과 객체와 http 상태 코드 세팅해 response로 보냄
+    }
+
     private void printErrorInfo(HttpServletRequest request) {
+
         log.info("ERROR_EXCEPTION: {}", request.getAttribute(ERROR_EXCEPTION));
         log.info("ERROR_EXCEPTION_TYPE: {}", request.getAttribute(ERROR_EXCEPTION_TYPE));
         log.info("ERROR_MESSAGE: {}", request.getAttribute(ERROR_MESSAGE)); //ex의 경우 NestedServletException 스프링이 한번 감싸서 반환

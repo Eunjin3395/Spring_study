@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 //@Component
 public class WebServerCustomizer implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
+    // WAS에 예외가 전달되거나 response.sendError()가 호출되면 아래에 등록한 에러 페이지 경로가 호출됨
     @Override
     public void customize(ConfigurableWebServerFactory factory) {
 
